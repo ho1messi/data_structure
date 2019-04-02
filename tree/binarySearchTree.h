@@ -5,25 +5,25 @@
 
 #include "linkedBinaryTree.h"
 
-template <class K, class E>
-class BinarySearchTree : public LinkedBinaryTree<std::pair<const K, E> >
+template <class K, class V>
+class BinarySearchTree : public LinkedBinaryTree<std::pair<const K, V> >
 {
 public:
 
-    typedef BinaryTreeNode<std::pair<const K, E> > node_type;
+    typedef BinaryTreeNode<std::pair<const K, V> > node_type;
 
-    typedef BinaryTreeNode<std::pair<const K, E> >* node_ptr;
+    typedef BinaryTreeNode<std::pair<const K, V> >* node_ptr;
 
-    typedef std::pair<const K, E> elem_type;
+    typedef std::pair<const K, V> elem_type;
 
-    typedef std::pair<const K, E>* elem_ptr;
+    typedef std::pair<const K, V>* elem_ptr;
 
 
     elem_ptr find(const K &) const;
 
     void insert(const elem_type &);
 
-    void insert(const K &, const E &);
+    void insert(const K &, const V &);
 
     void erase(const K &);
 
@@ -40,11 +40,11 @@ protected:
     void eraseWithOneChild(node_ptr t, node_ptr parent);
 };
 
-template <class K, class E>
-typename BinarySearchTree<K, E>::elem_ptr 
-BinarySearchTree<K, E>::find(const K & key) const
+template <class K, class V>
+typename BinarySearchTree<K, V>::elem_ptr 
+BinarySearchTree<K, V>::find(const K & key) const
 {
-    typename BinarySearchTree<K, E>::elem_ptr p = this->mRoot;
+    node_ptr p = this->mRoot;
 
     while (p != NULL)
     {
@@ -55,13 +55,15 @@ BinarySearchTree<K, E>::find(const K & key) const
         else
             return &p->element;
     }
+
+    return NULL;
 }
 
-template <class K, class E>
-void BinarySearchTree<K, E>::insert(
-        const BinarySearchTree<K, E>::elem_type & v)
+template <class K, class V>
+void BinarySearchTree<K, V>::insert(
+        const BinarySearchTree<K, V>::elem_type & v)
 {
-    typename BinarySearchTree<K, E>::node_ptr p = this->mRoot, q = NULL;
+    node_ptr p = this->mRoot, q = NULL;
 
     findParent(v.first, p, q);
 
@@ -82,17 +84,17 @@ void BinarySearchTree<K, E>::insert(
     }
 }
 
-template <class K, class E>
-void BinarySearchTree<K, E>::insert(const K & key, const E & elem)
+template <class K, class V>
+void BinarySearchTree<K, V>::insert(const K & key, const V & elem)
 {
-    std::pair<const K, E> p(key, elem);
+    std::pair<const K, V> p(key, elem);
     insert(p);
 }
 
-template <class K, class E>
-void BinarySearchTree<K, E>::erase(const K & key)
+template <class K, class V>
+void BinarySearchTree<K, V>::erase(const K & key)
 {
-    typename BinarySearchTree<K, E>::node_ptr t = this->mRoot, parent = NULL;
+    node_ptr t = this->mRoot, parent = NULL;
 
     findParent(key, t, parent);
 
@@ -101,11 +103,10 @@ void BinarySearchTree<K, E>::erase(const K & key)
 
     if (t->leftChild != NULL && t->rightChild != NULL)
     {
-        typename BinarySearchTree<K, E>::node_ptr p = t->leftChild, parent_r = t;
+        node_ptr p = t->leftChild, parent_r = t;
         p = findLargest(p, parent_r);
 
-        typename BinarySearchTree<K, E>::node_ptr c = 
-            replaceElement(t, parent, p->element);
+        node_ptr c = replaceElement(t, parent, p->element);
 
         if (parent_r == t)
             parent = c;
@@ -119,11 +120,11 @@ void BinarySearchTree<K, E>::erase(const K & key)
     eraseWithOneChild(t, parent);
 }
 
-template <class K, class E>
-void BinarySearchTree<K, E>::findParent(
+template <class K, class V>
+void BinarySearchTree<K, V>::findParent(
     const K & key,
-    BinaryTreeNode<std::pair<const K, E> > * & result,
-    BinaryTreeNode<std::pair<const K, E> > * & parent)
+    BinaryTreeNode<std::pair<const K, V> > * & result,
+    BinaryTreeNode<std::pair<const K, V> > * & parent)
 {
     result = this->mRoot;
 
@@ -138,11 +139,11 @@ void BinarySearchTree<K, E>::findParent(
     }
 }
 
-template <class K, class E>
-typename BinarySearchTree<K, E>::node_ptr
-BinarySearchTree<K, E>::findLargest(
-    BinarySearchTree<K, E>::node_ptr t,
-    BinarySearchTree<K, E>::node_ptr & parent)
+template <class K, class V>
+typename BinarySearchTree<K, V>::node_ptr
+BinarySearchTree<K, V>::findLargest(
+    BinarySearchTree<K, V>::node_ptr t,
+    BinarySearchTree<K, V>::node_ptr & parent)
 {
     while (t->rightChild != NULL)
     {
@@ -153,11 +154,11 @@ BinarySearchTree<K, E>::findLargest(
     return t;
 }
 
-template <class K, class E>
-typename BinarySearchTree<K, E>::node_ptr
-BinarySearchTree<K, E>::findSmallest(
-    BinarySearchTree<K, E>::node_ptr t,
-    BinarySearchTree<K, E>::node_ptr & parent)
+template <class K, class V>
+typename BinarySearchTree<K, V>::node_ptr
+BinarySearchTree<K, V>::findSmallest(
+    BinarySearchTree<K, V>::node_ptr t,
+    BinarySearchTree<K, V>::node_ptr & parent)
 {
     while (t->leftChild != NULL)
     {
@@ -168,15 +169,14 @@ BinarySearchTree<K, E>::findSmallest(
     return t;
 }
 
-template <class K, class E>
-typename BinarySearchTree<K, E>::node_ptr
-BinarySearchTree<K, E>::replaceElement(
-    BinarySearchTree<K, E>::node_ptr t,
-    BinarySearchTree<K, E>::node_ptr parent,
-    const BinarySearchTree<K,E>::elem_type & elem)
+template <class K, class V>
+typename BinarySearchTree<K, V>::node_ptr
+BinarySearchTree<K, V>::replaceElement(
+    BinarySearchTree<K, V>::node_ptr t,
+    BinarySearchTree<K, V>::node_ptr parent,
+    const BinarySearchTree<K,V>::elem_type & elem)
 {
-    typename BinarySearchTree<K, E>::node_ptr p = new 
-        BinarySearchTree<K, E>::node_type(elem, t->leftChild, t->rightChild);
+    node_ptr p = new node_type(elem, t->leftChild, t->rightChild);
 
     if (parent == NULL)
         this->mRoot = p;
@@ -188,13 +188,12 @@ BinarySearchTree<K, E>::replaceElement(
     return p;
 }
 
-template <class K, class E>
-void BinarySearchTree<K, E>::eraseWithOneChild(
-    BinarySearchTree<K, E>::node_ptr t,
-    BinarySearchTree<K, E>::node_ptr parent)
+template <class K, class V>
+void BinarySearchTree<K, V>::eraseWithOneChild(
+    BinarySearchTree<K, V>::node_ptr t,
+    BinarySearchTree<K, V>::node_ptr parent)
 {
-    typename BinarySearchTree<K, E>::node_ptr p =
-        t->leftChild != NULL ? t->leftChild : t->rightChild;
+    node_ptr p = t->leftChild != NULL ? t->leftChild : t->rightChild;
 
     if (t == this->mRoot)
         this->mRoot = p;

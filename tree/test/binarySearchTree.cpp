@@ -7,12 +7,26 @@ using namespace std;
 
 typedef int Key;
 typedef int Value;
-typedef BinaryTreeNode<pair<const Key, Value> > NodeType;
+typedef BinarySearchTree<Key, Value>::node_type NodeType;
+typedef BinarySearchTree<Key, Value>::node_ptr NodePtr;
+typedef BinarySearchTree<Key, Value>::elem_type ElemType;
+typedef BinarySearchTree<Key, Value>::elem_ptr ElemPtr;
 
 void output(NodeType * node)
 {
-    cout << "(" << node->element.first << ", " 
+    cout << " (" << node->element.first << ", " 
         << node->element.second << ")";
+}
+
+void printTree(LinkedBinaryTree<ElemType> & t)
+{
+    cout << t.height() << " pre:  ";
+    t.preOrder(output);
+    cout << endl << t.height() << " in:   ";
+    t.inOrder(output);
+    cout << endl << t.height() << " post: ";
+    t.postOrder(output);
+    cout << endl;
 }
 
 int main()
@@ -23,21 +37,31 @@ int main()
     BinarySearchTree<Key, Value> t;
     for (int i = 0; i < size; i++)
     {
+        printTree(t);
         t.insert(array[i], array[i]);
-        
-        t.inOrder(output);
-        cout << endl;
     }
 
+    printTree(t);
     cout << endl;
 
     for (int i = 0; i < size; i++)
     {
-        t.erase(array[i]);
-
-        t.inOrder(output);
-        cout << endl;
+        BinarySearchTree<Key, Value>::elem_ptr e = t.find(array[i]);
+        if (e != NULL)
+            cout << "(" << e->first << ", " << e->second << ")  ";
+        else
+            cout << array[i] << " not found  ";
     }
+
+    cout << endl << endl;
+
+    for (int i = 0; i < size; i++)
+    {
+        printTree(t);
+        t.erase(array[i]);
+    }
+
+    printTree(t);
 
     return 0;
 }

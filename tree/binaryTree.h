@@ -2,6 +2,7 @@
 #define __BINARY_TREE_H__
 
 #include <list>
+#include <algorithm>
 #include <cstddef>
 
 template <class T>
@@ -43,6 +44,19 @@ public:
 
     virtual void levelOrder(void (*) (BinaryTreeNode<T> *)) = 0;
 };
+
+template <class T>
+typename BinaryTree<T>::size_type
+height(BinaryTreeNode<T> * t)
+{
+    if (t == NULL)
+        return 0;
+
+    typename BinaryTree<T>::size_type l = height(t->leftChild);
+    typename BinaryTree<T>::size_type r = height(t->rightChild);
+
+    return std::max(l, r) + 1;
+}
 
 template <class T>
 void preOrder(BinaryTreeNode<T> * t, void (* visit) (BinaryTreeNode<T> *))

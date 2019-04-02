@@ -6,8 +6,10 @@
 template <class E>
 class LinkedBinaryTree : public BinaryTree<E>
 {
-public:
-    typedef size_t size_type;
+    typedef typename BinaryTree<E>::size_type size_type;
+
+    typedef BinaryTreeNode<E> node_type;
+    typedef BinaryTreeNode<E>* node_ptr;
 
 public:
 
@@ -19,15 +21,25 @@ public:
 
     size_type size() const;
 
+    size_type height() const;
+
     void erase();
 
-    void preOrder(void (*) (BinaryTreeNode<E> *));
+    void preOrder(void (*) (node_ptr));
 
-    void inOrder(void (*) (BinaryTreeNode<E> *));
+    void inOrder(void (*) (node_ptr));
 
-    void postOrder(void (*) (BinaryTreeNode<E> *));
+    void postOrder(void (*) (node_ptr));
 
-    void levelOrder(void (*) (BinaryTreeNode<E> *));
+    void levelOrder(void (*) (node_ptr));
+
+protected:
+
+    void insertLeft(node_ptr, node_ptr);
+    void insertLeft(node_ptr, const E &);
+
+    void insertRight(node_ptr, node_ptr);
+    void insertRight(node_ptr, const E &);
 
 protected:
 
@@ -56,9 +68,17 @@ bool LinkedBinaryTree<E>::empty() const
 }
 
 template <class E>
-typename LinkedBinaryTree<E>::size_type LinkedBinaryTree<E>::size() const
+typename LinkedBinaryTree<E>::size_type 
+LinkedBinaryTree<E>::size() const
 {
     return mTreeSize;
+}
+
+template <class E>
+typename LinkedBinaryTree<E>::size_type
+LinkedBinaryTree<E>::height() const
+{
+    return ::height(this->mRoot);
 }
 
 template <class E>
@@ -89,6 +109,38 @@ template <class E>
 void LinkedBinaryTree<E>::levelOrder(void (* visit) (BinaryTreeNode<E> *))
 {
     ::levelOrder(mRoot, visit);
+}
+
+template <class E>
+void LinkedBinaryTree<E>::insertLeft(
+        BinaryTreeNode<E> * t,
+        BinaryTreeNode<E> * p)
+{
+    if (t->leftChild == NULL)
+        t->leftChild = p;
+}
+
+template <class E>
+void LinkedBinaryTree<E>::insertLeft(BinaryTreeNode<E> * t, const E & elem)
+{
+    node_ptr p = new node_type(elem, NULL, NULL);
+    insertLeft(t, p);
+}
+
+template <class E>
+void LinkedBinaryTree<E>::insertRight(
+        BinaryTreeNode<E> * t,
+        BinaryTreeNode<E> * p)
+{
+    if (t->rightChild == NULL)
+        t->rightChild = p;
+}
+
+template <class E>
+void LinkedBinaryTree<E>::insertRight(BinaryTreeNode<E> * t, const E & elem)
+{
+    node_ptr p = new node_type(elem, NULL, NULL);
+    insertRight(t, p);
 }
 
 
