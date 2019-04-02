@@ -34,6 +34,10 @@ protected:
     static node_ptr findLargest(node_ptr t, node_ptr & parent);
 
     static node_ptr findSmallest(node_ptr t, node_ptr & parent);
+
+    node_ptr replaceElement(node_ptr t, node_ptr parent, const elem_type & elem);
+
+    void eraseWithOneChild(node_ptr t, node_ptr parent);
 };
 
 template <class K, class E>
@@ -88,54 +92,31 @@ void BinarySearchTree<K, E>::insert(const K & key, const E & elem)
 template <class K, class E>
 void BinarySearchTree<K, E>::erase(const K & key)
 {
-    typename BinarySearchTree<K, E>::node_ptr p = this->mRoot, q = NULL;
+    typename BinarySearchTree<K, E>::node_ptr t = this->mRoot, parent = NULL;
 
-    findParent(key, p, q);
+    findParent(key, t, parent);
 
-    if (p == NULL)
+    if (t == NULL)
         return;
 
-    if (p->leftChild != NULL && p->rightChild != NULL)
+    if (t->leftChild != NULL && t->rightChild != NULL)
     {
-        typename BinarySearchTree<K, E>::node_ptr r = p->leftChild, s = p;
-        r = findLargest(r, s);
+        typename BinarySearchTree<K, E>::node_ptr p = t->leftChild, parent_r = t;
+        p = findLargest(p, parent_r);
 
-        typename BinarySearchTree<K, E>::node_ptr t 
-            = new node_type(r->element, p->leftChild, p->rightChild);
-        if (q == NULL)
-            this->mRoot = t;
-        else if (p == q->leftChild)
-            q->leftChild = t;
+        typename BinarySearchTree<K, E>::node_ptr c = 
+            replaceElement(t, parent, p->element);
+
+        if (parent_r == t)
+            parent = c;
         else
-            q->rightChild = t;
+            parent = parent_r;
 
-        if (s == p)
-            q = t;
-        else
-            q = s;
-
-        delete p;
-        p = r;
+        delete t;
+        t = p;
     }
 
-    typename BinarySearchTree<K, E>::node_ptr r;
-    if (p->leftChild != NULL)
-        r = p->leftChild;
-    else
-        r = p->rightChild;
-
-    if (p == this->mRoot)
-        this->mRoot = r;
-    else
-    {
-        if (p == q->leftChild)
-            q->leftChild = r;
-        else
-            q->rightChild = r;
-    }       
-
-    this->mTreeSize--;
-    delete p;
+    eraseWithOneChild(t, parent);
 }
 
 template <class K, class E>
@@ -145,7 +126,6 @@ void BinarySearchTree<K, E>::findParent(
     BinaryTreeNode<std::pair<const K, E> > * & parent)
 {
     result = this->mRoot;
-    parent = NULL;
 
     while (result != NULL && result->element.first != key)
     {
@@ -164,8 +144,6 @@ BinarySearchTree<K, E>::findLargest(
     BinarySearchTree<K, E>::node_ptr t,
     BinarySearchTree<K, E>::node_ptr & parent)
 {
-    parent = NULL;
-
     while (t->rightChild != NULL)
     {
         parent = t;
@@ -181,8 +159,6 @@ BinarySearchTree<K, E>::findSmallest(
     BinarySearchTree<K, E>::node_ptr t,
     BinarySearchTree<K, E>::node_ptr & parent)
 {
-    parent = NULL;
-
     while (t->leftChild != NULL)
     {
         parent = t;
@@ -190,6 +166,48 @@ BinarySearchTree<K, E>::findSmallest(
     }
 
     return t;
+}
+
+template <class K, class E>
+typename BinarySearchTree<K, E>::node_ptr
+BinarySearchTree<K, E>::replaceElement(
+    BinarySearchTree<K, E>::node_ptr t,
+    BinarySearchTree<K, E>::node_ptr parent,
+    const BinarySearchTree<K,E>::elem_type & elem)
+{
+    typename BinarySearchTree<K, E>::node_ptr p = new 
+        BinarySearchTree<K, E>::node_type(elem, t->leftChild, t->rightChild);
+
+    if (parent == NULL)
+        this->mRoot = p;
+    else if (t == parent->leftChild)
+        parent->leftChild = p;
+    else
+        parent->rightChild = p;
+
+    return p;
+}
+
+template <class K, class E>
+void BinarySearchTree<K, E>::eraseWithOneChild(
+    BinarySearchTree<K, E>::node_ptr t,
+    BinarySearchTree<K, E>::node_ptr parent)
+{
+    typename BinarySearchTree<K, E>::node_ptr p =
+        t->leftChild != NULL ? t->leftChild : t->rightChild;
+
+    if (t == this->mRoot)
+        this->mRoot = p;
+    else
+    {
+        if (t == parent->leftChild)
+            parent->leftChild = p;
+        else
+            parent->rightChild = p;
+    }
+
+    this->mTreeSize--;
+    delete t;
 }
 
 
