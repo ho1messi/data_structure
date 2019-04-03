@@ -1,47 +1,106 @@
 #ifndef __BINARY_SEARCH_TREE_H__
 #define __BINARY_SEARCH_TREE_H__
 
+#include <cstddef>
 #include <utility>
-
-#include "linkedBinaryTree.h"
+#include <list>
 
 template <class K, class V>
-class BinarySearchTree : public LinkedBinaryTree<std::pair<const K, V> >
+class BinarySearchTree
 {
 public:
 
-    typedef BinaryTreeNode<std::pair<const K, V> > node_type;
+    struct Node
+    {
+        typedef std::pair<const K, V> elem_type;
+        typedef elem_type* elem_ptr;
 
-    typedef BinaryTreeNode<std::pair<const K, V> >* node_ptr;
+        elem_type element;
+        Node *leftChild, *rightChild;
 
-    typedef std::pair<const K, V> elem_type;
+        Node(const elem_type & element)
+            : element(element), leftChild(NULL), rightChild(NULL) {}
 
-    typedef std::pair<const K, V>* elem_ptr;
+        Node(const elem_type & element, Node * leftChild, Node * rightChild)
+            : element(element), leftChild(leftChild), rightChild(rightChild) {}
+    };
 
+public:
+
+    typedef Node node_type;
+
+    typedef node_type* node_ptr;
+
+    typedef typename node_type::elem_type elem_type;
+
+    typedef elem_type* elem_ptr;
+
+    typedef size_t size_type;
+
+public:
+
+    BinarySearchTree();
+
+    size_type height() const;
 
     elem_ptr find(const K &) const;
-
-    void insert(const elem_type &);
 
     void insert(const K &, const V &);
 
     void erase(const K &);
 
+    void preOrder(void (*) (node_ptr));
+
+    void inOrder(void (*) (node_ptr));
+
+    void postOrder(void (*) (node_ptr));
+
+    void levelOrder(void (*) (node_ptr));
+
 protected:
 
-    void findParent(const K & key, node_ptr & result, node_ptr & parent);
+    void findParent(const K &, node_ptr &, node_ptr &);
 
-    static node_ptr findLargest(node_ptr t, node_ptr & parent);
+    node_ptr replaceElement(node_ptr, node_ptr, const elem_type &);
 
-    static node_ptr findSmallest(node_ptr t, node_ptr & parent);
+    void eraseWithOneChild(node_ptr, node_ptr);
 
-    node_ptr replaceElement(node_ptr t, node_ptr parent, const elem_type & elem);
+    static size_type heightIter(node_ptr);
 
-    void eraseWithOneChild(node_ptr t, node_ptr parent);
+    static node_ptr findLargest(node_ptr, node_ptr &);
+
+    static node_ptr findSmallest(node_ptr, node_ptr &);
+
+    static void preOrderIter(node_ptr, void (*) (node_ptr));
+
+    static void inOrderIter(node_ptr, void (*) (node_ptr));
+
+    static void postOrderIter(node_ptr, void (*) (node_ptr));
+
+protected:
+
+    node_ptr mRoot;
+
+    size_type mTreeSize;
 };
 
+
 template <class K, class V>
-typename BinarySearchTree<K, V>::elem_ptr 
+BinarySearchTree<K, V>::BinarySearchTree()
+    : mRoot(NULL), mTreeSize(0)
+{
+
+}
+
+template <class K, class V>
+typename BinarySearchTree<K, V>::size_type
+BinarySearchTree<K, V>::height() const
+{
+    return heightIter(this->mRoot);
+}
+
+template <class K, class V>
+typename BinarySearchTree<K, V>::elem_ptr
 BinarySearchTree<K, V>::find(const K & key) const
 {
     node_ptr p = this->mRoot;
@@ -60,71 +119,105 @@ BinarySearchTree<K, V>::find(const K & key) const
 }
 
 template <class K, class V>
-void BinarySearchTree<K, V>::insert(
-        const BinarySearchTree<K, V>::elem_type & v)
+void BinarySearchTree<K, V>::insert(const K & key, const V & value)
 {
     node_ptr p = this->mRoot, q = NULL;
 
-    findParent(v.first, p, q);
+    findParent(key, p, q);
 
     if (p != NULL)
-        p->element.second = v.second;
+        p->element.second = value;
     else
     {
-        p = new node_type(v);
+        node_ptr t = new node_type(elem_type(key, value));
         if (this->mRoot != NULL)
-            if (v.first < q->element.first)
-                q->leftChild = p;
+            if (key < q->element.first)
+                q->leftChild = t;
             else
-                q->rightChild = p;
+                q->rightChild = t;
         else
-            this->mRoot = p;
+            this->mRoot = t;
 
         this->mTreeSize++;
     }
 }
 
 template <class K, class V>
-void BinarySearchTree<K, V>::insert(const K & key, const V & elem)
-{
-    std::pair<const K, V> p(key, elem);
-    insert(p);
-}
-
-template <class K, class V>
 void BinarySearchTree<K, V>::erase(const K & key)
 {
-    node_ptr t = this->mRoot, parent = NULL;
+    node_ptr t = this->mRoot, parent_t = NULL;
 
-    findParent(key, t, parent);
+    findParent(key, t, parent_t);
 
     if (t == NULL)
         return;
 
     if (t->leftChild != NULL && t->rightChild != NULL)
     {
-        node_ptr p = t->leftChild, parent_r = t;
-        p = findLargest(p, parent_r);
+        node_ptr p = t->leftChild, parent_p = t;
+        p = findLargest(p, parent_p);
 
-        node_ptr c = replaceElement(t, parent, p->element);
+        node_ptr c = replaceElement(t, parent_t, p->element);
 
-        if (parent_r == t)
-            parent = c;
+        if (parent_p == t)
+            parent_t = c;
         else
-            parent = parent_r;
+            parent_t = parent_p;
 
         delete t;
         t = p;
     }
 
-    eraseWithOneChild(t, parent);
+    eraseWithOneChild(t, parent_t);
+}
+
+template <class K, class V>
+void BinarySearchTree<K, V>::preOrder(void (* visit) (node_ptr))
+{
+    preOrderIter(this->mRoot, visit);
+}
+
+template <class K, class V>
+void BinarySearchTree<K, V>::inOrder(void (* visit) (node_ptr))
+{
+    inOrderIter(this->mRoot, visit);
+}
+
+template <class K, class V>
+void BinarySearchTree<K, V>::postOrder(void (* visit) (node_ptr))
+{
+    postOrderIter(this->mRoot, visit);
+}
+
+template <class K, class V>
+void BinarySearchTree<K, V>::levelOrder(void (* visit) (node_ptr))
+{    
+    std::list<node_ptr> l;
+    node_ptr t = this->mRoot;
+
+    while (t != NULL)
+    {
+        visit(t);
+
+        if (t->leftChild != NULL)
+            l.push_back(t->leftChild);
+        if (t->rightChild != NULL)
+            l.push_back(t->rightChild);
+
+        if (l.empty())
+            return;
+
+        t = l.front();
+        l.pop_front();
+    }
+
 }
 
 template <class K, class V>
 void BinarySearchTree<K, V>::findParent(
     const K & key,
-    BinaryTreeNode<std::pair<const K, V> > * & result,
-    BinaryTreeNode<std::pair<const K, V> > * & parent)
+    node_ptr & result,
+    node_ptr & parent)
 {
     result = this->mRoot;
 
@@ -137,6 +230,19 @@ void BinarySearchTree<K, V>::findParent(
         else 
             result = result->rightChild;
     }
+}
+
+template <class K, class V>
+typename BinarySearchTree<K, V>::size_type
+BinarySearchTree<K, V>::heightIter(node_ptr t)
+{    
+    if (t == NULL)
+        return 0;
+
+    size_type l = heightIter(t->leftChild);
+    size_type r = heightIter(t->rightChild);
+    return std::max(l, r) + 1;
+
 }
 
 template <class K, class V>
@@ -172,11 +278,11 @@ BinarySearchTree<K, V>::findSmallest(
 template <class K, class V>
 typename BinarySearchTree<K, V>::node_ptr
 BinarySearchTree<K, V>::replaceElement(
-    BinarySearchTree<K, V>::node_ptr t,
-    BinarySearchTree<K, V>::node_ptr parent,
-    const BinarySearchTree<K,V>::elem_type & elem)
+    node_ptr t,
+    node_ptr parent,
+    const elem_type & element)
 {
-    node_ptr p = new node_type(elem, t->leftChild, t->rightChild);
+    node_ptr p = new node_type(element, t->leftChild, t->rightChild);
 
     if (parent == NULL)
         this->mRoot = p;
@@ -207,6 +313,45 @@ void BinarySearchTree<K, V>::eraseWithOneChild(
 
     this->mTreeSize--;
     delete t;
+}
+
+template <class K, class V>
+void BinarySearchTree<K, V>::preOrderIter(
+        node_ptr t,
+        void (* visit) (node_ptr))
+{
+    if (t != NULL)
+    {
+        visit(t);
+        preOrderIter(t->leftChild, visit);
+        preOrderIter(t->rightChild, visit);
+    }
+}
+
+template <class K, class V>
+void BinarySearchTree<K, V>::inOrderIter(
+        node_ptr t,
+        void (* visit) (node_ptr))
+{
+    if (t != NULL)
+    {
+        inOrderIter(t->leftChild, visit);
+        visit(t);
+        inOrderIter(t->rightChild, visit);
+    }
+}
+
+template <class K, class V>
+void BinarySearchTree<K, V>::postOrderIter(
+        node_ptr t,
+        void (* visit) (node_ptr))
+{
+    if (t != NULL)
+    {
+        postOrderIter(t->leftChild, visit);
+        postOrderIter(t->rightChild, visit);
+        visit(t);
+    }
 }
 
 

@@ -9,16 +9,14 @@ typedef int Key;
 typedef int Value;
 typedef BinarySearchTree<Key, Value>::node_type NodeType;
 typedef BinarySearchTree<Key, Value>::node_ptr NodePtr;
-typedef BinarySearchTree<Key, Value>::elem_type ElemType;
-typedef BinarySearchTree<Key, Value>::elem_ptr ElemPtr;
 
-void output(NodeType * node)
+void output(NodePtr node)
 {
     cout << " (" << node->element.first << ", " 
         << node->element.second << ")";
 }
 
-void printTree(LinkedBinaryTree<ElemType> & t)
+void printTree(BinarySearchTree<Key, Value> & t)
 {
     cout << t.height() << " pre:  ";
     t.preOrder(output);
