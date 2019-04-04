@@ -14,6 +14,7 @@ public:
     {
         typedef std::pair<const K, V> elem_type;
         typedef elem_type* elem_ptr;
+        typedef size_t size_type;
 
         elem_type element;
         Node *leftChild, *rightChild;
@@ -35,7 +36,7 @@ public:
 
     typedef elem_type* elem_ptr;
 
-    typedef size_t size_type;
+    typedef typename node_type::size_type size_type;
 
 public:
 
