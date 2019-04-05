@@ -65,9 +65,9 @@ public:
 
 private:
 
-    static node_ptr insertIter(node_ptr, const K &, const V &);
+    static node_ptr insertRecursion(node_ptr, const K &, const V &);
 
-    static node_ptr eraseIter(node_ptr, const K &, bool & found);
+    static node_ptr eraseRecursion(node_ptr, const K &, bool & found);
 
     static node_ptr rebalance(node_ptr);
 
@@ -75,13 +75,13 @@ private:
 
     static bf_type getBF(node_ptr);
 
-    static size_type heightIter(node_ptr);
+    static size_type heightRecursion(node_ptr);
 
-    static void preOrderIter(node_ptr, void (*) (node_ptr));
+    static void preOrderRecursion(node_ptr, void (*) (node_ptr));
 
-    static void inOrderIter(node_ptr, void (*) (node_ptr));
+    static void inOrderRecursion(node_ptr, void (*) (node_ptr));
 
-    static void postOrderIter(node_ptr, void (*) (node_ptr));
+    static void postOrderRecursion(node_ptr, void (*) (node_ptr));
 
     static node_ptr rotateLL(node_ptr);
 
@@ -109,7 +109,7 @@ template <class K, class V>
 typename AVLTree<K, V>::size_type
 AVLTree<K, V>::height() const
 {
-    return heightIter(this->mRoot);
+    return heightRecursion(this->mRoot);
 }
 
 template <class K, class V>
@@ -137,7 +137,7 @@ void AVLTree<K, V>::insert(const K & key, const V & value)
     if (this->mRoot == NULL)
         this->mRoot = new node_type(elem_type(key, value));
     else
-        this->mRoot = insertIter(this->mRoot, key, value);
+        this->mRoot = insertRecursion(this->mRoot, key, value);
 
     this->mTreeSize++;
 
@@ -151,7 +151,7 @@ void AVLTree<K, V>::erase(const K & key)
         return;
 
     bool found = false;
-    this->mRoot = eraseIter(this->mRoot, key, found);
+    this->mRoot = eraseRecursion(this->mRoot, key, found);
 
     if (found)
         this->mTreeSize++;
@@ -160,19 +160,19 @@ void AVLTree<K, V>::erase(const K & key)
 template <class K, class V>
 void AVLTree<K, V>::preOrder(void (* visit) (node_ptr))
 {
-    preOrderIter(this->mRoot, visit);
+    preOrderRecursion(this->mRoot, visit);
 }
 
 template <class K, class V>
 void AVLTree<K, V>::inOrder(void (* visit) (node_ptr))
 {
-    inOrderIter(this->mRoot, visit);
+    inOrderRecursion(this->mRoot, visit);
 }
 
 template <class K, class V>
 void AVLTree<K, V>::postOrder(void (* visit) (node_ptr))
 {
-    postOrderIter(this->mRoot, visit);
+    postOrderRecursion(this->mRoot, visit);
 }
 
 template <class K, class V>
@@ -201,25 +201,25 @@ void AVLTree<K, V>::levelOrder(void (* visit) (node_ptr))
 
 template <class K, class V>
 typename AVLTree<K, V>::node_ptr
-AVLTree<K, V>::insertIter(AVLTree<K, V>::node_ptr t, const K & key, const V & value)
+AVLTree<K, V>::insertRecursion(AVLTree<K, V>::node_ptr t, const K & key, const V & value)
 {
     if (key < t->element.first)
         if (t->leftChild == NULL)
             t->leftChild = new node_type(elem_type(key, value));
         else
-            t->leftChild = insertIter(t->leftChild, key, value);
+            t->leftChild = insertRecursion(t->leftChild, key, value);
     else
         if (t->rightChild == NULL)
             t->rightChild = new node_type(elem_type(key, value));
         else
-            t->rightChild = insertIter(t->rightChild, key, value);
+            t->rightChild = insertRecursion(t->rightChild, key, value);
 
     return rebalance(t);
 }
 
 template <class K, class V>
 typename AVLTree<K, V>::node_ptr
-AVLTree<K, V>::eraseIter(AVLTree<K, V>::node_ptr t, const K & key, bool & found)
+AVLTree<K, V>::eraseRecursion(AVLTree<K, V>::node_ptr t, const K & key, bool & found)
 {
     node_ptr newRoot = t;
 
@@ -235,9 +235,9 @@ AVLTree<K, V>::eraseIter(AVLTree<K, V>::node_ptr t, const K & key, bool & found)
     else
     {
         if (key < t->element.first)
-            t->leftChild = eraseIter(t->leftChild, key, found);
+            t->leftChild = eraseRecursion(t->leftChild, key, found);
         else if (key > t->element.first)
-            t->rightChild = eraseIter(t->rightChild, key, found);
+            t->rightChild = eraseRecursion(t->rightChild, key, found);
 
         newRoot = rebalance(newRoot);
     }
@@ -271,8 +271,8 @@ template <class K, class V>
 typename AVLTree<K, V>::size_type
 AVLTree<K, V>::updateHeight(node_ptr t)
 {
-    size_type l = heightIter(t->leftChild);
-    size_type r = heightIter(t->rightChild);
+    size_type l = heightRecursion(t->leftChild);
+    size_type r = heightRecursion(t->rightChild);
 
     t->height = std::max(l, r) + 1;
 
@@ -283,12 +283,12 @@ template <class K, class V>
 typename AVLTree<K, V>::bf_type
 AVLTree<K, V>::getBF(AVLTree::node_ptr t)
 {
-    return heightIter(t->leftChild) - heightIter(t->rightChild);
+    return heightRecursion(t->leftChild) - heightRecursion(t->rightChild);
 }
 
 template <class K, class V>
 typename AVLTree<K, V>::size_type
-AVLTree<K, V>::heightIter(node_ptr t)
+AVLTree<K, V>::heightRecursion(node_ptr t)
 {
     if (t == NULL)
         return 0;
@@ -297,34 +297,34 @@ AVLTree<K, V>::heightIter(node_ptr t)
 }
 
 template <class K, class V>
-void AVLTree<K, V>::preOrderIter(node_ptr t, void (* visit) (node_ptr))
+void AVLTree<K, V>::preOrderRecursion(node_ptr t, void (* visit) (node_ptr))
 {
     if (t != NULL)
     {
         visit(t);
-        preOrderIter(t->leftChild, visit);
-        preOrderIter(t->rightChild, visit);
+        preOrderRecursion(t->leftChild, visit);
+        preOrderRecursion(t->rightChild, visit);
     }
 }
 
 template <class K, class V>
-void AVLTree<K, V>::inOrderIter(node_ptr t, void (* visit) (node_ptr))
+void AVLTree<K, V>::inOrderRecursion(node_ptr t, void (* visit) (node_ptr))
 {
     if (t != NULL)
     {
-        inOrderIter(t->leftChild, visit);
+        inOrderRecursion(t->leftChild, visit);
         visit(t);
-        inOrderIter(t->rightChild, visit);
+        inOrderRecursion(t->rightChild, visit);
     }
 }
 
 template <class K, class V>
-void AVLTree<K, V>::postOrderIter(node_ptr t, void (* visit) (node_ptr))
+void AVLTree<K, V>::postOrderRecursion(node_ptr t, void (* visit) (node_ptr))
 {
     if (t != NULL)
     {
-        postOrderIter(t->leftChild, visit);
-        postOrderIter(t->rightChild, visit);
+        postOrderRecursion(t->leftChild, visit);
+        postOrderRecursion(t->rightChild, visit);
         visit(t);
     }
 }

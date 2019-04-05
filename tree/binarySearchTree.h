@@ -66,17 +66,17 @@ protected:
 
     void eraseWithOneChild(node_ptr, node_ptr);
 
-    static size_type heightIter(node_ptr);
+    static size_type heightRecursion(node_ptr);
 
     static node_ptr findLargest(node_ptr, node_ptr &);
 
     static node_ptr findSmallest(node_ptr, node_ptr &);
 
-    static void preOrderIter(node_ptr, void (*) (node_ptr));
+    static void preOrderRecursion(node_ptr, void (*) (node_ptr));
 
-    static void inOrderIter(node_ptr, void (*) (node_ptr));
+    static void inOrderRecursion(node_ptr, void (*) (node_ptr));
 
-    static void postOrderIter(node_ptr, void (*) (node_ptr));
+    static void postOrderRecursion(node_ptr, void (*) (node_ptr));
 
 protected:
 
@@ -97,7 +97,7 @@ template <class K, class V>
 typename BinarySearchTree<K, V>::size_type
 BinarySearchTree<K, V>::height() const
 {
-    return heightIter(this->mRoot);
+    return heightRecursion(this->mRoot);
 }
 
 template <class K, class V>
@@ -175,19 +175,19 @@ void BinarySearchTree<K, V>::erase(const K & key)
 template <class K, class V>
 void BinarySearchTree<K, V>::preOrder(void (* visit) (node_ptr))
 {
-    preOrderIter(this->mRoot, visit);
+    preOrderRecursion(this->mRoot, visit);
 }
 
 template <class K, class V>
 void BinarySearchTree<K, V>::inOrder(void (* visit) (node_ptr))
 {
-    inOrderIter(this->mRoot, visit);
+    inOrderRecursion(this->mRoot, visit);
 }
 
 template <class K, class V>
 void BinarySearchTree<K, V>::postOrder(void (* visit) (node_ptr))
 {
-    postOrderIter(this->mRoot, visit);
+    postOrderRecursion(this->mRoot, visit);
 }
 
 template <class K, class V>
@@ -211,7 +211,6 @@ void BinarySearchTree<K, V>::levelOrder(void (* visit) (node_ptr))
         t = l.front();
         l.pop_front();
     }
-
 }
 
 template <class K, class V>
@@ -231,49 +230,6 @@ void BinarySearchTree<K, V>::findParent(
         else 
             result = result->rightChild;
     }
-}
-
-template <class K, class V>
-typename BinarySearchTree<K, V>::size_type
-BinarySearchTree<K, V>::heightIter(node_ptr t)
-{    
-    if (t == NULL)
-        return 0;
-
-    size_type l = heightIter(t->leftChild);
-    size_type r = heightIter(t->rightChild);
-    return std::max(l, r) + 1;
-
-}
-
-template <class K, class V>
-typename BinarySearchTree<K, V>::node_ptr
-BinarySearchTree<K, V>::findLargest(
-    BinarySearchTree<K, V>::node_ptr t,
-    BinarySearchTree<K, V>::node_ptr & parent)
-{
-    while (t->rightChild != NULL)
-    {
-        parent = t;
-        t = t->rightChild;
-    }
-
-    return t;
-}
-
-template <class K, class V>
-typename BinarySearchTree<K, V>::node_ptr
-BinarySearchTree<K, V>::findSmallest(
-    BinarySearchTree<K, V>::node_ptr t,
-    BinarySearchTree<K, V>::node_ptr & parent)
-{
-    while (t->leftChild != NULL)
-    {
-        parent = t;
-        t = t->leftChild;
-    }
-
-    return t;
 }
 
 template <class K, class V>
@@ -317,40 +273,83 @@ void BinarySearchTree<K, V>::eraseWithOneChild(
 }
 
 template <class K, class V>
-void BinarySearchTree<K, V>::preOrderIter(
+typename BinarySearchTree<K, V>::size_type
+BinarySearchTree<K, V>::heightRecursion(node_ptr t)
+{    
+    if (t == NULL)
+        return 0;
+
+    size_type l = heightRecursion(t->leftChild);
+    size_type r = heightRecursion(t->rightChild);
+    return std::max(l, r) + 1;
+
+}
+
+template <class K, class V>
+typename BinarySearchTree<K, V>::node_ptr
+BinarySearchTree<K, V>::findLargest(
+    BinarySearchTree<K, V>::node_ptr t,
+    BinarySearchTree<K, V>::node_ptr & parent)
+{
+    while (t->rightChild != NULL)
+    {
+        parent = t;
+        t = t->rightChild;
+    }
+
+    return t;
+}
+
+template <class K, class V>
+typename BinarySearchTree<K, V>::node_ptr
+BinarySearchTree<K, V>::findSmallest(
+    BinarySearchTree<K, V>::node_ptr t,
+    BinarySearchTree<K, V>::node_ptr & parent)
+{
+    while (t->leftChild != NULL)
+    {
+        parent = t;
+        t = t->leftChild;
+    }
+
+    return t;
+}
+
+template <class K, class V>
+void BinarySearchTree<K, V>::preOrderRecursion(
         node_ptr t,
         void (* visit) (node_ptr))
 {
     if (t != NULL)
     {
         visit(t);
-        preOrderIter(t->leftChild, visit);
-        preOrderIter(t->rightChild, visit);
+        preOrderRecursion(t->leftChild, visit);
+        preOrderRecursion(t->rightChild, visit);
     }
 }
 
 template <class K, class V>
-void BinarySearchTree<K, V>::inOrderIter(
+void BinarySearchTree<K, V>::inOrderRecursion(
         node_ptr t,
         void (* visit) (node_ptr))
 {
     if (t != NULL)
     {
-        inOrderIter(t->leftChild, visit);
+        inOrderRecursion(t->leftChild, visit);
         visit(t);
-        inOrderIter(t->rightChild, visit);
+        inOrderRecursion(t->rightChild, visit);
     }
 }
 
 template <class K, class V>
-void BinarySearchTree<K, V>::postOrderIter(
+void BinarySearchTree<K, V>::postOrderRecursion(
         node_ptr t,
         void (* visit) (node_ptr))
 {
     if (t != NULL)
     {
-        postOrderIter(t->leftChild, visit);
-        postOrderIter(t->rightChild, visit);
+        postOrderRecursion(t->leftChild, visit);
+        postOrderRecursion(t->rightChild, visit);
         visit(t);
     }
 }
