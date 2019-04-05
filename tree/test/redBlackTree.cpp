@@ -11,11 +11,17 @@ typedef RedBlackTree<Key, Value>::node_type NodeType;
 typedef RedBlackTree<Key, Value>::node_ptr NodePtr;
 typedef RedBlackTree<Key, Value>::elem_type ElemType;
 typedef RedBlackTree<Key, Value>::elem_ptr ElemPtr;
+typedef RedBlackTree<Key, Value>::color_type ColorType;
 
 void output(NodeType * node)
 {
     cout << " (" << node->element.first << ", " 
         << node->element.second << ")";
+
+    if (node->color == ColorType::RED)
+        cout << "-";
+    else
+        cout << "+";
 }
 
 void printTree(RedBlackTree<Key, Value> & t)
