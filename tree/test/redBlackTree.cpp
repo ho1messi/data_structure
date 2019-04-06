@@ -22,6 +22,8 @@ void output(NodeType * node)
         cout << "-";
     else
         cout << "+";
+
+    cout << node->blackCount;
 }
 
 void printTree(RedBlackTree<Key, Value> & t)
@@ -30,24 +32,23 @@ void printTree(RedBlackTree<Key, Value> & t)
     t.preOrder(output);
     cout << endl << t.height() << " in:   ";
     t.inOrder(output);
-    cout << endl << t.height() << " post: ";
-    t.postOrder(output);
+    //cout << endl << t.height() << " post: ";
+    //t.postOrder(output);
     cout << endl;
 }
 
 int main()
 {
-    static int array[] = {0, 1, 5, 6, 8, 2, 4};
+    static int array[] = {3, 1, 8, 9, 7, 4, 6, 5};
     static int size = sizeof(array) / sizeof (int);
 
     RedBlackTree<Key, Value> t;
     for (int i = 0; i < size; i++)
     {
-        printTree(t);
         t.insert(array[i], array[i]);
+        printTree(t);
     }
 
-    printTree(t);
     cout << endl;
 
     for (int i = 0; i < size; i++)
@@ -63,11 +64,9 @@ int main()
 
     for (int i = 0; i < size; i++)
     {
-        printTree(t);
         t.erase(array[i]);
+        printTree(t);
     }
-
-    printTree(t);
 
     return 0;
 }

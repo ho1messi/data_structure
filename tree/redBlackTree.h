@@ -56,7 +56,13 @@ public:
 
     RedBlackTree();
 
+    ~RedBlackTree();
+
     size_type height() const;
+
+    bool empty() const;
+
+    void clear();
 
     elem_ptr find(const K &) const;
 
@@ -76,25 +82,61 @@ private:
 
     void adjustRoot();
 
-    static size_type heightRecursion(node_ptr);
-
-    static node_ptr insertRecursion(const K &, const V &, node_ptr);
-
-    static node_ptr insertAdjustRecursion(node_ptr);
-
     static color_type getColor(node_ptr);
 
     static size_type countColor(node_ptr, color_type);
 
-    static node_ptr adjustChangeColor(node_ptr);
+    static size_type getBlackCount(node_ptr);
 
-    static node_ptr adjustRotateLL(node_ptr);
+    static int getBlackFactor(node_ptr);
 
-    static node_ptr adjustRotateLR(node_ptr);
+    static size_type heightRecursion(node_ptr);
 
-    static node_ptr adjustRotateRR(node_ptr);
+    static size_type updateBlackCount(node_ptr);
 
-    static node_ptr adjustRotateRL(node_ptr);
+    static node_ptr insertRecursion(node_ptr, const K &, const V &);
+
+    static node_ptr eraseRecursion(node_ptr, const K &);
+
+    static node_ptr eraseLargest(node_ptr, node_ptr & largest);
+
+    static node_ptr insertAdjustRecursion(node_ptr);
+
+    static node_ptr eraseAdjustRecursion(node_ptr);
+
+    static node_ptr insertChangeColor(node_ptr);
+
+    static node_ptr insertRotateLL(node_ptr);
+
+    static node_ptr insertRotateLR(node_ptr);
+
+    static node_ptr insertRotateRL(node_ptr);
+
+    static node_ptr insertRotateRR(node_ptr);
+
+    static node_ptr eraseChangeColorLb(node_ptr);
+
+    static node_ptr eraseChangeColorRb(node_ptr);
+
+    static node_ptr eraseRotateLb1(node_ptr);
+
+    static node_ptr eraseRotateLb2(node_ptr);
+
+    static node_ptr eraseRotateRb1(node_ptr);
+
+    static node_ptr eraseRotateRb2(node_ptr);
+
+    static node_ptr eraseRotateLr0(node_ptr);
+
+    static node_ptr eraseRotateLr1(node_ptr);
+
+    static node_ptr eraseRotateLr2(node_ptr);
+
+    static node_ptr eraseRotateRr0(node_ptr);
+
+    static node_ptr eraseRotateRr1(node_ptr);
+
+    static node_ptr eraseRotateRr2(node_ptr);
 
     static node_ptr rotateLeft(node_ptr);
 
@@ -121,10 +163,28 @@ RedBlackTree<K, V>::RedBlackTree()
 }
 
 template <class K, class V>
+RedBlackTree<K, V>::~RedBlackTree()
+{
+    clear();
+}
+
+template <class K, class V>
 typename RedBlackTree<K, V>::size_type
 RedBlackTree<K, V>::height() const
 {
     return heightRecursion(this->mRoot);
+}
+
+template <class K, class V>
+bool RedBlackTree<K, V>::empty() const
+{
+    return mTreeSize == 0;
+}
+
+template <class K, class V>
+void RedBlackTree<K, V>::clear()
+{
+    postOrder([](node_ptr t){delete t;});
 }
 
 template <class K, class V>
@@ -149,10 +209,7 @@ RedBlackTree<K, V>::find(const K & key) const
 template <class K, class V>
 void RedBlackTree<K, V>::insert(const K & key, const V & value)
 {
-    if (mRoot == NULL)
-        mRoot = new node_type(elem_type(key, value), color_type::BLACK);
-    else
-        mRoot = insertRecursion(key, value, mRoot);
+    mRoot = insertRecursion(mRoot, key, value);
 
     adjustRoot();
 }
@@ -160,7 +217,7 @@ void RedBlackTree<K, V>::insert(const K & key, const V & value)
 template <class K, class V>
 void RedBlackTree<K, V>::erase(const K & key)
 {
-    
+    mRoot = eraseRecursion(mRoot, key);
 
     adjustRoot();
 }
@@ -214,67 +271,6 @@ void RedBlackTree<K, V>::adjustRoot()
 }
 
 template <class K, class V>
-typename RedBlackTree<K, V>::size_type
-RedBlackTree<K, V>::heightRecursion(node_ptr t)
-{
-    if (t == NULL)
-        return 0;
-
-    size_type l = heightRecursion(t->leftChild);
-    size_type r = heightRecursion(t->rightChild);
-    return std::max(l, r) + 1;
-}
-
-template <class K, class V>
-typename RedBlackTree<K, V>::node_ptr
-RedBlackTree<K, V>::insertRecursion(const K & key, const V & value, node_ptr t)
-{
-    if (t == NULL)
-        return new node_type(elem_type(key, value), color_type::RED);
-
-    if (key < t->element.first)
-        t->leftChild = insertRecursion(key, value, t->leftChild);
-    else
-        t->rightChild = insertRecursion(key, value, t->rightChild);
-
-    return insertAdjustRecursion(t);
-}
-
-template <class K, class V>
-typename RedBlackTree<K, V>::node_ptr
-RedBlackTree<K, V>::insertAdjustRecursion(node_ptr t)
-{
-    if (getColor(t) == color_type::RED)
-        return t;
-
-    if (countColor(t, color_type::RED) == 2)
-    {
-        if (countColor(t->leftChild, color_type::RED) == 1 ||
-                countColor(t->rightChild, color_type::RED) == 1)
-            return adjustChangeColor(t);
-    }
-    else if (countColor(t, color_type::RED) == 1)
-    {
-        if (getColor(t->leftChild) == color_type::RED)
-        {
-            if (getColor(t->leftChild->leftChild) == color_type::RED)
-                return adjustRotateLL(t);
-            else if (getColor(t->leftChild->rightChild) == color_type::RED)
-                return adjustRotateLR(t);
-        }
-        else
-        {
-            if (getColor(t->rightChild->leftChild) == color_type::RED)
-                return adjustRotateRL(t);
-            else if (getColor(t->rightChild->rightChild) == color_type::RED)
-                return adjustRotateRR(t);
-        }
-    }
-
-    return t;
-}
-
-template <class K, class V>
 typename RedBlackTree<K, V>::color_type
 RedBlackTree<K, V>::getColor(node_ptr t)
 {
@@ -288,6 +284,9 @@ template <class K, class V>
 typename RedBlackTree<K, V>::size_type
 RedBlackTree<K, V>::countColor(node_ptr t, color_type color)
 {
+    if (t == NULL)
+        return 0;
+
     size_type result = getColor(t->leftChild) == color ? 1 : 0;
     result += getColor(t->rightChild) == color ? 1 : 0;
 
@@ -295,19 +294,209 @@ RedBlackTree<K, V>::countColor(node_ptr t, color_type color)
 }
 
 template <class K, class V>
-typename RedBlackTree<K, V>::node_ptr
-RedBlackTree<K, V>::adjustChangeColor(node_ptr t)
+typename RedBlackTree<K, V>::size_type
+RedBlackTree<K, V>::getBlackCount(node_ptr t)
 {
-    t->color = color_type::RED;
-    t->leftChild->color = color_type::BLACK;
-    t->rightChild->color = color_type::BLACK;
+    if (t == NULL)
+        return 0;
+
+    return t->blackCount;
+}
+
+template <class K, class V>
+int RedBlackTree<K, V>::getBlackFactor(node_ptr t)
+{
+    size_type l = getBlackCount(t->leftChild);
+    size_type r = getBlackCount(t->rightChild);
+
+    l += getColor(t->leftChild) == color_type::BLACK;
+    r += getColor(t->rightChild) == color_type::BLACK;
+
+    return l - r;
+}
+
+template <class K, class V>
+typename RedBlackTree<K, V>::size_type
+RedBlackTree<K, V>::heightRecursion(node_ptr t)
+{
+    if (t == NULL)
+        return 0;
+
+    size_type l = heightRecursion(t->leftChild);
+    size_type r = heightRecursion(t->rightChild);
+    return std::max(l, r) + 1;
+}
+
+template <class K, class V>
+typename RedBlackTree<K, V>::size_type
+RedBlackTree<K, V>::updateBlackCount(node_ptr t)
+{
+    size_type result = getBlackCount(t->leftChild);
+    result += getColor(t->leftChild) == color_type::BLACK;
+
+    t->blackCount = result;
+    return result;
+}
+
+template <class K, class V>
+typename RedBlackTree<K, V>::node_ptr
+RedBlackTree<K, V>::insertRecursion(node_ptr t, const K & key, const V & value)
+{
+    if (t == NULL)
+        return new node_type(elem_type(key, value), color_type::RED);
+
+    if (key < t->element.first)
+        t->leftChild = insertRecursion(t->leftChild, key, value);
+    else
+        t->rightChild = insertRecursion(t->rightChild, key, value);
+
+    return insertAdjustRecursion(t);
+}
+
+template <class K, class V>
+typename RedBlackTree<K, V>::node_ptr
+RedBlackTree<K, V>::eraseRecursion(node_ptr t, const K & key)
+{
+    if (t == NULL)
+        return t;
+
+    if (key < t->element.first)
+        t->leftChild = eraseRecursion(t->leftChild, key);
+    else if (key > t->element.first)
+        t->rightChild = eraseRecursion(t->rightChild, key);
+    else if (t->leftChild == NULL)
+    {
+        node_ptr newRoot = t->rightChild;
+
+        delete t;
+        return newRoot;
+    }
+    else
+    {
+        node_ptr newRoot;
+        t->leftChild = eraseLargest(t->leftChild, newRoot);
+        newRoot->leftChild = t->leftChild;
+        newRoot->rightChild = t->rightChild;
+
+        delete t;
+        t = newRoot;
+    }
+
+    return eraseAdjustRecursion(t);
+}
+
+template <class K, class V>
+typename RedBlackTree<K, V>::node_ptr
+RedBlackTree<K, V>::eraseLargest(node_ptr t, node_ptr & largest)
+{
+    if (t == NULL)
+        return largest = t;
+
+    if (t->rightChild == NULL)
+    {
+        largest = t;
+        return t->leftChild;
+    }
+    else
+    {
+        t->rightChild = eraseLargest(t->rightChild, largest);
+        return eraseAdjustRecursion(t);
+    }
+}
+
+template <class K, class V>
+typename RedBlackTree<K, V>::node_ptr
+RedBlackTree<K, V>::insertAdjustRecursion(node_ptr t)
+{
+    updateBlackCount(t);
+
+    if (getColor(t) == color_type::RED)
+        return t;
+
+    if (countColor(t, color_type::RED) == 2)
+    {
+        if (countColor(t->leftChild, color_type::RED) == 1 ||
+                countColor(t->rightChild, color_type::RED) == 1)
+            return insertChangeColor(t);
+    }
+    else if (countColor(t, color_type::RED) == 1)
+    {
+        if (getColor(t->leftChild) == color_type::RED)
+        {
+            if (getColor(t->leftChild->leftChild) == color_type::RED)
+                return insertRotateLL(t);
+            else if (getColor(t->leftChild->rightChild) == color_type::RED)
+                return insertRotateLR(t);
+        }
+        else
+        {
+            if (getColor(t->rightChild->leftChild) == color_type::RED)
+                return insertRotateRL(t);
+            else if (getColor(t->rightChild->rightChild) == color_type::RED)
+                return insertRotateRR(t);
+        }
+    }
 
     return t;
 }
 
 template <class K, class V>
 typename RedBlackTree<K, V>::node_ptr
-RedBlackTree<K, V>::adjustRotateLL(node_ptr t)
+RedBlackTree<K, V>::eraseAdjustRecursion(node_ptr t)
+{
+    if (getBlackFactor(t) == -1)
+    {
+        if (getColor(t->rightChild) == color_type::BLACK)
+            if (countColor(t->rightChild, color_type::RED) == 0)
+                return eraseChangeColorLb(t);
+            else if (getColor(t->rightChild->leftChild) == color_type::BLACK)
+                return eraseRotateLb1(t);
+            else 
+                return eraseRotateLb2(t);
+        else
+            if (countColor(t->rightChild->leftChild, color_type::RED) == 0)
+                return eraseRotateLr0(t);
+            else if (getColor(t->rightChild->leftChild->leftChild) == color_type::BLACK)
+                return eraseRotateLr1(t);
+            else
+                return eraseRotateLr2(t);
+    }
+    else if (getBlackFactor(t) == 1)
+    {
+        if (getColor(t->leftChild) == color_type::BLACK)
+            if (countColor(t->leftChild, color_type::RED) == 0)
+                return eraseChangeColorRb(t);
+            else if (getColor(t->leftChild->rightChild) == color_type::BLACK)
+                return eraseRotateRb1(t);
+            else 
+                return eraseRotateRb2(t);
+        else
+            if (countColor(t->leftChild->rightChild, color_type::RED) == 0)
+                return eraseRotateRr0(t);
+            else if (getColor(t->leftChild->rightChild->rightChild) == color_type::BLACK)
+                return eraseRotateRr1(t);
+            else
+                return eraseRotateRr2(t);
+    }
+
+    return t;
+}
+
+template <class K, class V>
+typename RedBlackTree<K, V>::node_ptr
+RedBlackTree<K, V>::insertChangeColor(node_ptr t)
+{
+    t->color = color_type::RED;
+    t->leftChild->color = color_type::BLACK;
+    t->rightChild->color = color_type::BLACK;
+
+    updateBlackCount(t);
+    return t;
+}
+
+template <class K, class V>
+typename RedBlackTree<K, V>::node_ptr
+RedBlackTree<K, V>::insertRotateLL(node_ptr t)
 {
     t->color = color_type::RED;
     t->leftChild->color = color_type::BLACK;
@@ -317,7 +506,7 @@ RedBlackTree<K, V>::adjustRotateLL(node_ptr t)
 
 template <class K, class V>
 typename RedBlackTree<K, V>::node_ptr
-RedBlackTree<K, V>::adjustRotateLR(node_ptr t)
+RedBlackTree<K, V>::insertRotateLR(node_ptr t)
 {
     t->color = color_type::RED;
     t->leftChild->rightChild->color = color_type::BLACK;
@@ -328,7 +517,7 @@ RedBlackTree<K, V>::adjustRotateLR(node_ptr t)
 
 template <class K, class V>
 typename RedBlackTree<K, V>::node_ptr
-RedBlackTree<K, V>::adjustRotateRL(node_ptr t)
+RedBlackTree<K, V>::insertRotateRL(node_ptr t)
 {
     t->color = color_type::RED;
     t->rightChild->leftChild->color = color_type::BLACK;
@@ -339,11 +528,181 @@ RedBlackTree<K, V>::adjustRotateRL(node_ptr t)
 
 template <class K, class V>
 typename RedBlackTree<K, V>::node_ptr
-RedBlackTree<K, V>::adjustRotateRR(node_ptr t)
+RedBlackTree<K, V>::insertRotateRR(node_ptr t)
 {
     t->color = color_type::RED;
     t->rightChild->color = color_type::BLACK;
     return rotateLeft(t);
+}
+
+template <class K, class V>
+typename RedBlackTree<K, V>::node_ptr
+RedBlackTree<K, V>::eraseChangeColorLb(node_ptr t)
+{
+    t->color = color_type::BLACK;
+    t->rightChild->color = color_type::RED;
+
+    updateBlackCount(t);
+    return t;
+}
+
+template <class K, class V>
+typename RedBlackTree<K, V>::node_ptr
+RedBlackTree<K, V>::eraseChangeColorRb(node_ptr t)
+{
+    t->color = color_type::BLACK;
+    t->leftChild->color = color_type::RED;
+
+    updateBlackCount(t);
+    return t;
+}
+
+template <class K, class V>
+typename RedBlackTree<K, V>::node_ptr
+RedBlackTree<K, V>::eraseRotateLb1(node_ptr t)
+{
+    t->rightChild->color = t->color;
+    t->color = color_type::BLACK;
+    t->rightChild->rightChild->color = color_type::BLACK;
+
+    node_ptr newRoot = rotateLeft(t);
+    updateBlackCount(t);
+    updateBlackCount(newRoot);
+
+    return newRoot;
+}
+
+template <class K, class V>
+typename RedBlackTree<K, V>::node_ptr
+RedBlackTree<K, V>::eraseRotateLb2(node_ptr t)
+{
+    t->rightChild->leftChild->color = t->color;
+    t->color = color_type::BLACK;
+
+    t->rightChild = rotateRight(t->rightChild);
+    node_ptr newRoot = rotateLeft(t);
+    updateBlackCount(t);
+    updateBlackCount(newRoot);
+
+    return newRoot;
+}
+
+template <class K, class V>
+typename RedBlackTree<K, V>::node_ptr
+RedBlackTree<K, V>::eraseRotateRb1(node_ptr t)
+{
+    t->leftChild->color = t->color;
+    t->color = color_type::BLACK;
+    t->leftChild->leftChild->color = color_type::BLACK;
+
+    node_ptr newRoot = rotateRight(t);
+    updateBlackCount(t);
+    updateBlackCount(newRoot);
+
+    return newRoot;
+}
+
+template <class K, class V>
+typename RedBlackTree<K, V>::node_ptr
+RedBlackTree<K, V>::eraseRotateRb2(node_ptr t)
+{
+    t->leftChild->rightChild->color = t->color;
+    t->color = color_type::BLACK;
+
+    t->leftChild = rotateLeft(t->leftChild);
+    node_ptr newRoot = rotateRight(t);
+    updateBlackCount(t);
+    updateBlackCount(newRoot);
+
+    return newRoot;
+}
+
+template <class K, class V>
+typename RedBlackTree<K, V>::node_ptr
+RedBlackTree<K, V>::eraseRotateLr0(node_ptr t)
+{
+    t->rightChild->color = color_type::BLACK;
+    t->rightChild->leftChild->color = color_type::RED;
+
+    node_ptr newRoot = rotateLeft(t);
+    updateBlackCount(t);
+
+    return newRoot;
+}
+
+template <class K, class V>
+typename RedBlackTree<K, V>::node_ptr
+RedBlackTree<K, V>::eraseRotateLr1(node_ptr t)
+{
+    t->rightChild->leftChild->rightChild->color = color_type::BLACK;
+
+    t->rightChild = rotateRight(t->rightChild);
+    node_ptr newRoot = rotateLeft(t);
+
+    updateBlackCount(t);
+    updateBlackCount(newRoot);
+
+    return newRoot;
+}
+
+template <class K, class V>
+typename RedBlackTree<K, V>::node_ptr
+RedBlackTree<K, V>::eraseRotateLr2(node_ptr t)
+{
+    t->rightChild->leftChild->leftChild->color = color_type::BLACK;
+
+    t->rightChild->leftChild = rotateRight(t->rightChild->leftChild);
+    t->rightChild = rotateRight(t->rightChild);
+    node_ptr newRoot = rotateLeft(t);
+
+    updateBlackCount(t);
+    updateBlackCount(newRoot);
+
+    return newRoot;
+}
+
+template <class K, class V>
+typename RedBlackTree<K, V>::node_ptr
+RedBlackTree<K, V>::eraseRotateRr0(node_ptr t)
+{
+    t->leftChild->color = color_type::BLACK;
+    t->leftChild->rightChild->color = color_type::RED;
+
+    node_ptr newRoot = rotateRight(t);
+    updateBlackCount(t);
+
+    return newRoot;
+}
+
+template <class K, class V>
+typename RedBlackTree<K, V>::node_ptr
+RedBlackTree<K, V>::eraseRotateRr1(node_ptr t)
+{
+    t->leftChild->rightChild->leftChild->color = color_type::BLACK;
+
+    t->leftChild = rotateLeft(t->leftChild);
+    node_ptr newRoot = rotateRight(t);
+
+    updateBlackCount(t);
+    updateBlackCount(newRoot);
+
+    return newRoot;
+}
+
+template <class K, class V>
+typename RedBlackTree<K, V>::node_ptr
+RedBlackTree<K, V>::eraseRotateRr2(node_ptr t)
+{
+    t->leftChild->rightChild->rightChild->color = color_type::BLACK;
+
+    t->leftChild->rightChild = rotateRight(t->leftChild->rightChild);
+    t->leftChild = rotateLeft(t->leftChild);
+    node_ptr newRoot = rotateRight(t);
+
+    updateBlackCount(t);
+    updateBlackCount(newRoot);
+
+    return newRoot;
 }
 
 template <class K, class V>
