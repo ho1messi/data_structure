@@ -47,7 +47,13 @@ public:
 
     AVLTree();
 
+    ~AVLTree();
+
     size_type height() const;
+
+    bool empty() const;
+
+    void clear();
 
     elem_ptr find(const K &) const;
 
@@ -106,10 +112,28 @@ AVLTree<K, V>::AVLTree()
 }
 
 template <class K, class V>
+AVLTree<K, V>::~AVLTree()
+{
+    clear();
+}
+
+template <class K, class V>
 typename AVLTree<K, V>::size_type
 AVLTree<K, V>::height() const
 {
     return heightRecursion(this->mRoot);
+}
+
+template <class K, class V>
+bool AVLTree<K, V>::empty() const
+{
+    return mTreeSize == 0;
+}
+
+template <class K, class V>
+void AVLTree<K, V>::clear()
+{
+    postOrder([](node_ptr t){delete t;});
 }
 
 template <class K, class V>
