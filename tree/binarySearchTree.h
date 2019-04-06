@@ -42,7 +42,13 @@ public:
 
     BinarySearchTree();
 
+    ~BinarySearchTree();
+
     size_type height() const;
+
+    bool empty() const;
+
+    void clear();
 
     elem_ptr find(const K &) const;
 
@@ -94,10 +100,28 @@ BinarySearchTree<K, V>::BinarySearchTree()
 }
 
 template <class K, class V>
+BinarySearchTree<K, V>::~BinarySearchTree()
+{
+    clear();
+}
+
+template <class K, class V>
 typename BinarySearchTree<K, V>::size_type
 BinarySearchTree<K, V>::height() const
 {
     return heightRecursion(this->mRoot);
+}
+
+template <class K, class V>
+bool BinarySearchTree<K, V>::empty() const
+{
+    return mTreeSize == 0;
+}
+
+template <class K, class V>
+void BinarySearchTree<K, V>::clear()
+{
+    postOrder([](node_ptr t){delete t;});
 }
 
 template <class K, class V>
