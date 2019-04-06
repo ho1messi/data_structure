@@ -22,8 +22,8 @@ void printTree(BinarySearchTree<Key, Value> & t)
     t.preOrder(output);
     cout << endl << t.height() << " in:   ";
     t.inOrder(output);
-    cout << endl << t.height() << " post: ";
-    t.postOrder(output);
+    //cout << endl << t.height() << " post: ";
+    //t.postOrder(output);
     cout << endl;
 }
 
@@ -35,11 +35,10 @@ int main()
     BinarySearchTree<Key, Value> t;
     for (int i = 0; i < size; i++)
     {
-        printTree(t);
         t.insert(array[i], array[i]);
+        printTree(t);
     }
 
-    printTree(t);
     cout << endl;
 
     for (int i = 0; i < size; i++)
@@ -55,11 +54,9 @@ int main()
 
     for (int i = 0; i < size; i++)
     {
-        printTree(t);
         t.erase(array[i]);
+        printTree(t);
     }
-
-    printTree(t);
 
     return 0;
 }

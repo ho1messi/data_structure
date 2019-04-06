@@ -1,24 +1,32 @@
 #include <iostream>
 #include <cstdlib>
 
-#include "avlTree.h"
+#include "redBlackTree.h"
 
 using namespace std;
 
 typedef int Key;
 typedef int Value;
-typedef AVLTree<Key, Value>::node_type NodeType;
-typedef AVLTree<Key, Value>::node_ptr NodePtr;
-typedef AVLTree<Key, Value>::elem_type ElemType;
-typedef AVLTree<Key, Value>::elem_ptr ElemPtr;
+typedef RedBlackTree<Key, Value>::node_type NodeType;
+typedef RedBlackTree<Key, Value>::node_ptr NodePtr;
+typedef RedBlackTree<Key, Value>::elem_type ElemType;
+typedef RedBlackTree<Key, Value>::elem_ptr ElemPtr;
+typedef RedBlackTree<Key, Value>::color_type ColorType;
 
 void output(NodeType * node)
 {
     cout << " (" << node->element.first << ", " 
-        << node->element.second << ")-" << node->height;
+        << node->element.second << ")";
+
+    if (node->color == ColorType::RED)
+        cout << "-";
+    else
+        cout << "+";
+
+    cout << node->blackCount;
 }
 
-void printTree(AVLTree<Key, Value> & t)
+void printTree(RedBlackTree<Key, Value> & t)
 {
     cout << t.height() << " pre:  ";
     t.preOrder(output);
@@ -31,10 +39,10 @@ void printTree(AVLTree<Key, Value> & t)
 
 int main()
 {
-    static int array[] = {0, 1, 5, 6, 8, 2, 4};
+    static int array[] = {3, 1, 8, 9, 7, 4, 6, 5};
     static int size = sizeof(array) / sizeof (int);
 
-    AVLTree<Key, Value> t;
+    RedBlackTree<Key, Value> t;
     for (int i = 0; i < size; i++)
     {
         t.insert(array[i], array[i]);
@@ -45,7 +53,7 @@ int main()
 
     for (int i = 0; i < size; i++)
     {
-        AVLTree<Key, Value>::elem_ptr e = t.find(array[i]);
+        RedBlackTree<Key, Value>::elem_ptr e = t.find(array[i]);
         if (e != NULL)
             cout << "(" << e->first << ", " << e->second << ")  ";
         else
